@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>إنشاء رابط دفع</title>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        font-family: sans-serif;
+        background: #f8d7da;
+        margin: 0;
+        padding: 0;
+      }
+      .container {
+        max-width: 450px;
+        margin: 40px auto;
+        background: #fff;
+        padding: 25px;
+        border-radius: 12px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        text-align: right;
+      }
+      .table {
+        width: fit-content;
+                margin: 40px auto;
+        background: #fff;
+        padding: 25px;
+        border-radius: 12px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        text-align: right;
+      }
+      h2,
+      p {
+        text-align: center;
+      }
+      input,
+      textarea,
+      select {
+        width: 100%;
+        padding: 10px;
+        margin: 7px 0;
+        border-radius: 6px;
+        border: 1px solid #ccc;
+        font-size: 16px;
+      }
+      button {
+        width: 100%;
+        padding: 12px;
+        font-size: 18px;
+        background: #b51616;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+      }
+      button:hover {
+        opacity: 0.9;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 15px;
+      }
+      th,
+      td {
+        border: 1px solid #ccc;
+        padding: 8px;
+        text-align: center;
+      }
+      th {
+        background: #f1f1f1;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="table">
+      <h2>مدير الروابط والأسعار</h2>
+      <label>رابط المنتج</label>
+      <input type="text" id="linkInput" placeholder="ادخل رابط المنتج" />
+      <label>السعر</label>
+      <input type="number" id="priceInput" placeholder="ادخل السعر" />
+      <button onclick="addLink()">➕ إضافة الرابط</button>
+
+      <table id="linksTable">
+        <thead>
+          <tr>
+            <th>الرابط</th>
+            <th>السعر</th>
+            <th>حذف</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <div class="container">
+      <h2>إنشاء رابط دفع</h2>
+      <label>اسم الدفع</label>
+      <input
+        type="text"
+        id="productName"
+        placeholder="ادخل اسم المنتج"
+        required />
+      <label>رابط صورة</label>
+      <input type="text" id="imageLink" placeholder="ضع رابط الصورة" required />
+      <label>اسم المستلم</label>
+      <input
+        type="text"
+        id="receiverName"
+        placeholder="ادخل اسم المستلم"
+        required />
+      <label>هاتف المستلم</label>
+      <input type="text" id="phone" placeholder="مثال: 33123456" required />
+      <label>المبلغ</label>
+      <select id="amountSelect">
+        <option value>اختر السعر</option>
+      </select>
+      <label>الوصف</label>
+      <textarea
+        id="desc"
+        placeholder="مثلاً: دفعة لمنتج معينة"
+        required></textarea>
+      <button onclick="generatePaymentPage()">⚡ إنشاء رابط الدفع الآن</button>
+    </div>
+
+    <script>
+      let linksArray = [];
+
+      function addLink() {
+        const link = document.getElementById("linkInput").value.trim();
+        const price = parseFloat(
+          document.getElementById("priceInput").value.trim()
+        );
+
+        if (!link || isNaN(price)) {
+          alert("يرجى إدخال رابط وصحة السعر");
+          return;
+        }
+        if (linksArray.some((item) => item.price === price)) {
+          alert("لا يمكنك إضافة رابط بنفس السعر");
+          return;
+        }
+
+        linksArray.push({ link, price });
+        linksArray.sort((a, b) => a.price - b.price);
+        renderTable();
+        updateSelect();
+        document.getElementById("linkInput").value = "";
+        document.getElementById("priceInput").value = "";
+      }
+
+      function renderTable() {
+        const tbody = document
+          .getElementById("linksTable")
+          .querySelector("tbody");
+        tbody.innerHTML = "";
+        linksArray.forEach((item, index) => {
+          const row = document.createElement("tr");
+          row.innerHTML = `
+      <td><a href="${item.link}" target="_blank">${item.link}</a></td>
+      <td>${item.price}</td>
+      <td><button style="background:#b51616;color:white;border:none;border-radius:4px;padding:5px 10px;cursor:pointer;" onclick="deleteLink(${index})">❌</button></td>
+    `;
+          tbody.appendChild(row);
+        });
+      }
+
+      function deleteLink(index) {
+        linksArray.splice(index, 1);
+        renderTable();
+        updateSelect();
+      }
+
+      function updateSelect() {
+        const select = document.getElementById("amountSelect");
+        select.innerHTML = `<option value="">اختر السعر</option>`;
+        linksArray.forEach((item) => {
+          const option = document.createElement("option");
+          option.value = item.price;
+          option.text = item.price;
+          select.appendChild(option);
+        });
+      }
+
+      function generatePaymentPage() {
+        const productName = encodeURIComponent(
+          document.getElementById("productName").value.trim()
+        );
+        const img = encodeURIComponent(
+          document.getElementById("imageLink").value.trim()
+        );
+        const receiver = encodeURIComponent(
+          document.getElementById("receiverName").value.trim()
+        );
+        const phone = encodeURIComponent(
+          document.getElementById("phone").value.trim()
+        );
+        const desc = encodeURIComponent(
+          document.getElementById("desc").value.trim()
+        );
+        const amount = parseFloat(
+          document.getElementById("amountSelect").value
+        );
+        if (
+          !productName ||
+          !img ||
+          !receiver ||
+          !phone ||
+          !desc ||
+          isNaN(amount)
+        ) {
+          alert("يرجى ملء جميع الحقول واختيار السعر");
+          return;
+        }
+
+        const linkObj = linksArray.find((item) => item.price === amount);
+        if (!linkObj) {
+          alert("الرابط غير موجود لهذا السعر");
+          return;
+        }
+
+        const link = encodeURIComponent(linkObj.link);
+        const url = `payment.html?productName=${productName}&img=${img}&receiver=${receiver}&phone=${phone}&amount=${amount}&desc=${desc}&link=${link}`;
+        window.open(url, "_blank");
+      }
+    </script>
+  </body>
+</html>

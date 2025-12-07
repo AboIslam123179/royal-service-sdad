@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>الدفع</title>
+        <style>
+            *{
+                box-sizing: border-box;
+            }
+        body {
+            font-family: sans-serif;
+            background: #f8d7da;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 450px;
+            margin: 60px auto;
+            background: #fff;
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 4px 18px rgba(0, 0, 0, 0.15);
+            text-align: right;
+        }
+
+        label {
+            font-weight: bold;
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        input,
+        textarea {
+            width: 100%;
+            padding: 14px;
+            margin: 10px 0 20px 0;
+            border-radius: 12px;
+            border: 2px solid #e5e5e5;
+            background: #fafafa;
+            font-size: 16px;
+        }
+
+        input:focus,
+        textarea:focus {
+            border-color: #b51616;
+            background: white;
+            outline: none;
+        }
+
+        button,
+        .pay-btn {
+            width: 100%;
+            padding: 14px;
+            font-size: 18px;
+            background: #b51616;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            text-align: center;
+            text-decoration: none;
+            display: block;
+            margin-top: 20px;
+        }
+
+        button:hover,
+        .pay-btn:hover {
+            opacity: .9;
+            transform: translateY(-2px);
+        }
+
+        img.product-img {
+            width: 100%;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+    </style>
+    </head>
+
+    <body>
+        <div class="container">
+            <img id="productImage" class="product-img" src alt="product" />
+            <h3 id="productName">اسم المنتج</h3>
+            <div class="info">
+                <p><strong>اسم المستلم: </strong><span
+                        id="receiverName"></span></p>
+                <p><strong>رقم الهاتف: </strong><span id="phone"></span></p>
+                <p><strong>الوصف: </strong><span id="desc"></span></p>
+                <p><strong>المبلغ: </strong><span id="amount"></span> ريال
+                    سعودي</p>
+            </div>
+            <a id="payNowBtn" class="pay-btn" href="#" target="_blank">ادفع
+                الآن</a>
+        </div>
+
+        <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const img = urlParams.get("img");
+        const link = urlParams.get("link");
+        const productName = urlParams.get("productName");
+        const receiver = urlParams.get("receiver");
+        const phone = urlParams.get("phone");
+        const amount = urlParams.get("amount");
+        const desc = urlParams.get("desc");
+
+        document.getElementById("productImage").src = img;
+        document.getElementById("productName").innerText = productName;
+        document.getElementById("receiverName").innerText = receiver;
+        document.getElementById("phone").innerText = phone;
+        document.getElementById("amount").innerText = amount;
+        document.getElementById("desc").innerText = desc;
+        document.getElementById("payNowBtn").href = link;
+    </script>
+    </body>
+
+</html>
