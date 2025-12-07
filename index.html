@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>إنشاء رابط دفع</title>
     <style>
-      * {
+      *{
         box-sizing: border-box;
       }
       body {
@@ -23,22 +23,9 @@
         box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
         text-align: right;
       }
-      .table {
-        width: fit-content;
-                margin: 40px auto;
-        background: #fff;
-        padding: 25px;
-        border-radius: 12px;
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        text-align: right;
-      }
-      h2,
-      p {
-        text-align: center;
-      }
       input,
-      textarea,
-      select {
+      select,
+      textarea {
         width: 100%;
         padding: 10px;
         margin: 7px 0;
@@ -73,10 +60,55 @@
       th {
         background: #f1f1f1;
       }
+      td:first-of-type {
+        font-size: 10px;
+      }
+
+      /* Popup styles */
+      .popup-bg {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.4);
+        justify-content: center;
+        align-items: center;
+      }
+      .popup {
+        background: #fff;
+        padding: 25px;
+        border-radius: 12px;
+        text-align: center;
+        max-width: 400px;
+      }
+      .popup button {
+        margin-top: 15px;
+        padding: 10px 15px;
+        width: auto;
+      }
     </style>
   </head>
   <body>
-    <div class="table">
+
+    <!-- Payment Form -->
+    <div class="container">
+      <h2>إنشاء رابط دفع</h2>
+      <label>اسم المنتج</label><input type="text" id="productName" required />
+      <label>رابط صورة</label><input type="text" id="imageLink" required />
+      <label>اسم المستلم</label><input type="text" id="receiverName" required />
+      <label>هاتف المستلم</label><input type="text" id="phone" required />
+      <label>المبلغ</label>
+      <select id="amountSelect">
+        <option value>اختر السعر</option>
+      </select>
+      <label>الوصف</label><textarea id="desc" required></textarea>
+      <button onclick="generatePaymentPage()">⚡ إنشاء رابط الدفع الآن</button>
+    </div>
+
+    <!-- Link Manager -->
+    <div class="container">
       <h2>مدير الروابط والأسعار</h2>
       <label>رابط المنتج</label>
       <input type="text" id="linkInput" placeholder="ادخل رابط المنتج" />
@@ -96,84 +128,54 @@
       </table>
     </div>
 
-    <div class="container">
-      <h2>إنشاء رابط دفع</h2>
-      <label>اسم الدفع</label>
-      <input
-        type="text"
-        id="productName"
-        placeholder="ادخل اسم المنتج"
-        required />
-      <label>رابط صورة</label>
-      <input type="text" id="imageLink" placeholder="ضع رابط الصورة" required />
-      <label>اسم المستلم</label>
-      <input
-        type="text"
-        id="receiverName"
-        placeholder="ادخل اسم المستلم"
-        required />
-      <label>هاتف المستلم</label>
-      <input type="text" id="phone" placeholder="مثال: 33123456" required />
-      <label>المبلغ</label>
-      <select id="amountSelect">
-        <option value>اختر السعر</option>
-      </select>
-      <label>الوصف</label>
-      <textarea
-        id="desc"
-        placeholder="مثلاً: دفعة لمنتج معينة"
-        required></textarea>
-      <button onclick="generatePaymentPage()">⚡ إنشاء رابط الدفع الآن</button>
+    <!-- Popup -->
+    <div class="popup-bg" id="popupBg">
+      <div class="popup">
+        <h3>تم إنشاء رابط الدفع!</h3>
+        <p>انسخ الرابط واستخدمه:</p>
+        <input
+          type="text"
+          id="generatedLink"
+          style="width: 100%; padding: 8px; margin-top: 10px"
+          readonly />
+        <button onclick="copyLink()">نسخ الرابط</button>
+        <button onclick="closePopup()">إغلاق</button>
+      </div>
     </div>
 
     <script>
       let linksArray = [];
 
-      function addLink() {
-        const link = document.getElementById("linkInput").value.trim();
-        const price = parseFloat(
-          document.getElementById("priceInput").value.trim()
-        );
+      // Replace with your deployed Vercel backend URL
+      // const BACKEND_URL = "https://whop-link-generator-server.vercel.app/";
+      const BACKEND_URL = "http://localhost:3000";
 
-        if (!link || isNaN(price)) {
-          alert("يرجى إدخال رابط وصحة السعر");
-          return;
+      // Load all links from backend
+      async function loadLinks() {
+        try {
+          const res = await fetch(`${BACKEND_URL}/links`);
+          linksArray = await res.json();
+          renderTable();
+          updateSelect();
+        } catch (err) {
+          console.error("Error loading links:", err);
         }
-        if (linksArray.some((item) => item.price === price)) {
-          alert("لا يمكنك إضافة رابط بنفس السعر");
-          return;
-        }
-
-        linksArray.push({ link, price });
-        linksArray.sort((a, b) => a.price - b.price);
-        renderTable();
-        updateSelect();
-        document.getElementById("linkInput").value = "";
-        document.getElementById("priceInput").value = "";
       }
 
+      // Render links table
       function renderTable() {
-        const tbody = document
-          .getElementById("linksTable")
-          .querySelector("tbody");
+        const tbody = document.querySelector("#linksTable tbody");
         tbody.innerHTML = "";
         linksArray.forEach((item, index) => {
           const row = document.createElement("tr");
-          row.innerHTML = `
-      <td><a href="${item.link}" target="_blank">${item.link}</a></td>
-      <td>${item.price}</td>
-      <td><button style="background:#b51616;color:white;border:none;border-radius:4px;padding:5px 10px;cursor:pointer;" onclick="deleteLink(${index})">❌</button></td>
-    `;
+          row.innerHTML = `<td><a href="${item.link}" target="_blank">${item.link}</a></td>
+                     <td>${item.price}</td>
+                     <td><button onclick="deleteLink('${item.price}')">❌</button></td>`;
           tbody.appendChild(row);
         });
       }
 
-      function deleteLink(index) {
-        linksArray.splice(index, 1);
-        renderTable();
-        updateSelect();
-      }
-
+      // Update price dropdown in payment form
       function updateSelect() {
         const select = document.getElementById("amountSelect");
         select.innerHTML = `<option value="">اختر السعر</option>`;
@@ -185,6 +187,46 @@
         });
       }
 
+      // Add a new link via backend
+      async function addLink() {
+        const link = document.getElementById("linkInput").value.trim();
+        const price = parseFloat(
+          document.getElementById("priceInput").value.trim()
+        );
+        if (!link || isNaN(price)) {
+          return alert("ادخل رابط وسعر صحيح");
+        }
+
+        try {
+          const res = await fetch(`${BACKEND_URL}/links`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ link, price }),
+          });
+          const data = await res.json();
+          if (res.status !== 200) return alert(data.error);
+
+          document.getElementById("linkInput").value = "";
+          document.getElementById("priceInput").value = "";
+          loadLinks();
+        } catch (err) {
+          console.error(err);
+          alert("حدث خطأ أثناء إضافة الرابط");
+        }
+      }
+
+      // Delete link via backend
+      async function deleteLink(price) {
+        try {
+          await fetch(`${BACKEND_URL}/links/${price}`, { method: "DELETE" });
+          loadLinks();
+        } catch (err) {
+          console.error(err);
+          alert("حدث خطأ أثناء حذف الرابط");
+        }
+      }
+
+      // Generate payment page URL and show popup
       function generatePaymentPage() {
         const productName = encodeURIComponent(
           document.getElementById("productName").value.trim()
@@ -204,6 +246,7 @@
         const amount = parseFloat(
           document.getElementById("amountSelect").value
         );
+
         if (
           !productName ||
           !img ||
@@ -212,20 +255,40 @@
           !desc ||
           isNaN(amount)
         ) {
-          alert("يرجى ملء جميع الحقول واختيار السعر");
-          return;
+          return alert("املأ جميع الحقول واختر السعر");
         }
 
         const linkObj = linksArray.find((item) => item.price === amount);
-        if (!linkObj) {
-          alert("الرابط غير موجود لهذا السعر");
-          return;
-        }
+        if (!linkObj) return alert("الرابط غير موجود لهذا السعر");
 
         const link = encodeURIComponent(linkObj.link);
-        const url = `payment.html?productName=${productName}&img=${img}&receiver=${receiver}&phone=${phone}&amount=${amount}&desc=${desc}&link=${link}`;
-        window.open(url, "_blank");
+        const paymentUrl = `${window.location.origin}/payment.html?productName=${productName}&img=${img}&receiver=${receiver}&phone=${phone}&amount=${amount}&desc=${desc}&link=${link}`;
+
+        // Show popup
+        document.getElementById("generatedLink").value = paymentUrl;
+        document.getElementById("popupBg").style.display = "flex";
       }
+
+      // Copy link from popup
+      function copyLink() {
+        const input = document.getElementById("generatedLink");
+        input.select();
+        input.setSelectionRange(0, 99999);
+        navigator.clipboard
+          .writeText(input.value)
+          .then(() => alert("تم نسخ الرابط!"))
+          .catch(() => alert("فشل النسخ"));
+      }
+
+      // Close popup
+      function closePopup() {
+        document.getElementById("popupBg").style.display = "none";
+      }
+
+      // Initialize
+      window.onload = loadLinks;
     </script>
   </body>
 </html>
+
+
