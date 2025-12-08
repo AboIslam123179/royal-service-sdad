@@ -5,12 +5,18 @@
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>الدفع</title>
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link
+            href="https://fonts.googleapis.com/css2?family=Cairo:wght@200..1000&display=swap"
+            rel="stylesheet">
         <style>
-            *{
-                box-sizing: border-box;
-            }
+        * {
+            box-sizing: border-box;
+        }
+
         body {
-            font-family: sans-serif;
+            font-family: "Cairo", sans-serif;
             background: #f8d7da;
             margin: 0;
             padding: 0;
@@ -72,28 +78,66 @@
             transform: translateY(-2px);
         }
 
+        .container h3 {
+            text-align: center;
+            font-size: 32px;
+    margin-top: 0px;
+    color: #183260;
+        }
+
+        .container .image-box {
+            text-align: center;
+        }
+
         img.product-img {
-            width: 100%;
+            width: 150px;
             border-radius: 12px;
             margin-bottom: 20px;
+        }
+
+        .info>p {
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 0 10px 100px;
+        }
+
+        .info p strong {
+            color: #b51616;
+        }
+
+        #amount-box {
+            font-size: 28px;
+            color: #b51616;
+            font-weight: bold;
         }
     </style>
     </head>
 
     <body>
         <div class="container">
-            <img id="productImage" class="product-img" src alt="product" />
-            <h3 id="productName">اسم المنتج</h3>
+            <div class="image-box">
+                <img id="productImage" class="product-img" src alt="product" />
+            </div>
+            <h3 class="productName">اسم المنتج</h3>
             <div class="info">
                 <p><strong>اسم المستلم: </strong><span
                         id="receiverName"></span></p>
                 <p><strong>رقم الهاتف: </strong><span id="phone"></span></p>
                 <p><strong>الوصف: </strong><span id="desc"></span></p>
-                <p><strong>المبلغ: </strong><span id="amount"></span> ريال
-                    سعودي</p>
+                <p id="amount-box"><strong>المبلغ: </strong>
+                    <span><span id="amount"></span> ريال
+                        قطري</span>
+                </p>
             </div>
             <a id="payNowBtn" class="pay-btn" href="#" target="_blank">ادفع
                 الآن</a>
+        </div>
+        <div style="text-align: center;">
+            جميع الحقوق محفوظه &copy; - 2025
+            <span
+                class="productName"></span>
         </div>
 
         <script>
@@ -107,7 +151,7 @@
         const desc = urlParams.get("desc");
 
         document.getElementById("productImage").src = img;
-        document.getElementById("productName").innerText = productName;
+        document.querySelectorAll(".productName").forEach(element => element.innerText = productName) ;
         document.getElementById("receiverName").innerText = receiver;
         document.getElementById("phone").innerText = phone;
         document.getElementById("amount").innerText = amount;
